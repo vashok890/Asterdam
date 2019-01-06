@@ -1,0 +1,74 @@
+clc;
+n=10000;
+eb=1;
+eb_no_db=0:5:35;
+eb_no=10.^(eb_no_db./10);
+no=eb./eb_no;
+ber=zeros(1,length(eb_no));
+for i=1:length(eb_no)
+    no_bits=0;
+    no_errors=0;
+    while (no_errors<=100)
+       
+        u=rand;
+        a=sqrt(-2*log(u));
+        noise_vlt=sqrt(no(i))*randn;
+        
+            y=a*sqrt(eb)+ noise_vlt;
+            if (y<=0)
+                y_d=1;
+            else
+                y_d=0;
+            end
+             no_bits=no_bits+1;
+             
+     no_errors=no_errors+y_d;
+        
+    end
+        ber(i)=no_errors/no_bits;
+end   
+
+for i=1:length(eb_no)
+    no_bits1=0;
+    no_errors1=0;
+while (no_errors1<=100)
+       
+        u1=rand;
+        a1=sqrt(-2*log(u1));
+        noise_vlt1=sqrt(no(i))*randn(1,2);
+        for j=1:2
+            y1(1)=a1*sqrt(eb)+ noise_vlt1(1);
+            y1(2)=noise_vlt1(2);
+            if (y1(1)>=y1(2))
+                y_d1=0;
+            else
+                y_d1=1;
+            end
+        end
+             no_bits1=no_bits1+1;
+             
+     no_errors1=no_errors1+y_d1;
+        
+end
+        ber1(i)=no_errors1/no_bits1;
+   end
+
+rho_b1=eb./no;
+pe_BFSK=(1/2)*(1-sqrt(rho_b1./(2+rho_b1)));
+pe_BFSK_2=(1/2).*(erfc(sqrt(eb_no_db/2)));
+
+rho_b=2*eb./no;
+pe=(1/2)*(1-sqrt(rho_b./(1+rho_b)));
+pe_2=(1/2).*erfc(sqrt(eb_no_db));
+
+pe_DPSK=1./(2*(1+rho_b));
+pe_DPSK_2=(1/2).*exp(-eb_no_db);
+
+semilogy(eb_no_db,ber,'-*',eb_no_db,pe,'-.',eb_no_db,pe_2,'-v',eb_no_db,pe_DPSK,'-^',eb_no_db,pe_DPSK_2,'-o');
+hold on;
+
+semilogy(eb_no_db,ber1,'-+',eb_no_db,pe_BFSK,'--',eb_no_db,pe_BFSK_2);
+
+xlabel('avg SNR/bit');
+ylabel('Prob of error');
+legend('monte_carlo simulation', 'thoeretical value');
